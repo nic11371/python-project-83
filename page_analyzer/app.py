@@ -18,7 +18,7 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 app = Flask(__name__)
-app.secret_key = 'super secret key' 
+app.secret_key = 'super secret key'
 # app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
@@ -86,5 +86,4 @@ def validate(url):
         errors['name'] = "Введите URL адрес"
     if len(url) > 255:
         errors['name'] = "Слишком длинный адрес"
-
     return errors
