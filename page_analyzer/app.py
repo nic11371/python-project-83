@@ -12,7 +12,7 @@ from flask import (
     url_for
 )
 from dotenv import load_dotenv
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 
 
 load_dotenv()
@@ -93,5 +93,5 @@ def is_validate(url):
         errors['name'] = "Некорректный URL"
     if len(url) > 255:
         errors['name'] = "Слишком длинный адрес"
-    
+
     return errors
