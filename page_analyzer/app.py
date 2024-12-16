@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+import validators
 from flask import (
     get_flashed_messages,
     flash,
@@ -11,7 +12,7 @@ from flask import (
     url_for
 )
 from dotenv import load_dotenv
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 
 load_dotenv()
@@ -35,15 +36,16 @@ def root():
 def add_record():
     cursor = conn.cursor()
     record = request.form.to_dict()
-    errors = validate(record)
-    if errors:
+    validate = is_validate(record['url'])
+    if validate:
         return render_template(
             'pages/index.html',
             record=record,
-            errors=errors
+            errors=validate
         )
+    normalized_record = normalize_url(record['url'])
     query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
-    cursor.execute(query, (record['url'],))
+    cursor.execute(query, (normalized_record,))
     conn.commit()
     record['id'] = cursor.fetchone()[0]
     flash("Страница успешно добавлена")
@@ -77,13 +79,19 @@ def get_pages():
     )
 
 
-def validate(url):
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    normalized_parsed_url = parsed_url._replace(
+        path="", params="", query="", fragment="").geturl()
+    return normalized_parsed_url.lower()
+
+
+def is_validate(url):
     errors = {}
-    parsed_url = urlparse(url['url'])
-    if not parsed_url.scheme and not parsed_url.netloc:
+    is_valid = validators.url(url)
+    if not is_valid:
         errors['name'] = "Некорректный URL"
-    if url is None:
-        errors['name'] = "Введите URL адрес"
     if len(url) > 255:
         errors['name'] = "Слишком длинный адрес"
+    
     return errors
