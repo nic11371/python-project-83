@@ -3,7 +3,7 @@
 {% block alert %}
 <div class="flashes">
     {% for category, message in messages %}
-    <div class="alert alert-success" role="alert">{{ message }}</div>
+    <div class="alert {{ category }}" role="alert">{{ message }}</div>
     {% endfor %}
 </div>
 {% endblock %}
@@ -32,10 +32,10 @@
     </div>
     <h2 class="mt-5 mb-3">Проверки</h2>
     <form method="post" action="">
-        <input type="submit" class="btn btn-primary" value="Запустить проверку">
+        <input action="" type="submit" class="btn btn-primary" value="Запустить проверку">
     </form>
     <div>
-        <table class="table table-bordered table-hover mt-2"> 
+        <table class="table table-bordered table-hover mt-2" data-test="checks"> 
             <thead>
                 <tr>
                     <th>ID</th>
@@ -46,7 +46,14 @@
                     <th>Дата создания</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tbody>
         </table>
     </div>
 </div>

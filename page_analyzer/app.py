@@ -1,5 +1,3 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import os
 import validators
 from flask import (
@@ -13,14 +11,17 @@ from flask import (
 )
 from dotenv import load_dotenv
 from urllib.parse import urlparse
+from page_analyzer.page_repository import PageRepository
 
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
 app = Flask(__name__)
 app.secret_key = 'super secret key'
 # app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+
+repo = PageRepository(DATABASE_URL)
 
 
 @app.route('/')
@@ -34,7 +35,6 @@ def root():
 
 @app.post('/')
 def add_record():
-    cursor = conn.cursor()
     record = request.form.to_dict()
     validate = is_validate(record['url'])
     if validate:
@@ -44,21 +44,19 @@ def add_record():
             errors=validate
         )
     normalized_record = normalize_url(record['url'])
-    query = "INSERT INTO urls (name) VALUES (%s) RETURNING id"
-    cursor.execute(query, (normalized_record,))
-    conn.commit()
-    record['id'] = cursor.fetchone()[0]
-    flash("Страница успешно добавлена")
-    return redirect(url_for('show_page', id=record['id']), code=302)
+    page_id = repo.get_id(normalized_record)
+    if page_id:
+        flash("Страница уже существует", "alert-info")
+        return redirect(url_for('show_page', id=page_id), code=302)
+    else:
+        record['id'] = repo.insert_row(normalized_record)
+        flash("Страница успешно добавлена", "alert-success")
+        return redirect(url_for('show_page', id=record['id']), code=302)
 
 
 @app.route('/urls/<id>')
 def show_page(id):
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    query = "SELECT * FROM urls WHERE id = %s"
-    cursor.execute(query, (id,))
-    conn.commit()
-    page = cursor.fetchone()
+    page = repo.cart_page(id)
     messages = get_flashed_messages(with_categories=True)
     return render_template(
         'pages/show_page.html',
@@ -67,12 +65,13 @@ def show_page(id):
     )
 
 
+# @app.post('urls/<id>/checks')
+# def check_url(id):
+#     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
 @app.route('/urls')
 def get_pages():
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    query = "SELECT * FROM urls ORDER BY id DESC"
-    cursor.execute(query)
-    list_pages = cursor.fetchall()
+    list_pages = repo.get_content()
     return render_template(
         'pages/get_pages.html',
         rows=list_pages
@@ -93,5 +92,4 @@ def is_validate(url):
         errors['name'] = "Некорректный URL"
     if len(url) > 255:
         errors['name'] = "Слишком длинный адрес"
-
     return errors
