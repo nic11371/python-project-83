@@ -58,6 +58,14 @@ def add_record():
 def show_page(id):
     page = repo.cart_page(id)
     messages = get_flashed_messages(with_categories=True)
+    checks = repo.check_row(id)
+    if checks:
+        return render_template(
+            'pages/show_page.html',
+            page=page,
+            checks=checks,
+            messages=messages
+            )
     return render_template(
         'pages/show_page.html',
         page=page,
@@ -65,9 +73,12 @@ def show_page(id):
     )
 
 
-# @app.post('urls/<id>/checks')
-# def check_url(id):
-#     cursor = conn.cursor(cursor_factory=RealDictCursor)
+@app.post('/urls/<id>/checks')
+def check_url(id):
+    repo.insert_check(id)
+    flash("Страница успешно проверена", "alert-success")
+    return redirect(url_for('show_page', id=id), code=302)
+
 
 @app.route('/urls')
 def get_pages():
