@@ -1,5 +1,6 @@
 import os
 import validators
+import requests
 from flask import (
     get_flashed_messages,
     flash,
@@ -54,7 +55,7 @@ def add_record():
         return redirect(url_for('show_page', id=record['id']), code=302)
 
 
-@app.route('/urls/<id>')
+@app.route('/urls/<int:id>')
 def show_page(id):
     page = repo.cart_page(id)
     messages = get_flashed_messages(with_categories=True)
@@ -69,7 +70,16 @@ def show_page(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
-    repo.insert_check(id)
+    try:
+        req = request_to_site(id)
+    except Exception:
+        flash("Произошла ошибка при проверке", "alert-danger")
+        return redirect(url_for('show_page', id=id), code=302)
+    if req.status_code != 200:
+        flash("Произошла ошибка при проверке", "alert-danger")
+        return redirect(url_for('show_page', id=id), code=302)
+    status_code = req.status_code
+    repo.insert_check(id, status_code)
     flash("Страница успешно проверена", "alert-success")
     return redirect(url_for('show_page', id=id), code=302)
 
@@ -98,3 +108,8 @@ def is_validate(url):
     if len(url) > 255:
         errors['name'] = "Слишком длинный адрес"
     return errors
+
+
+def request_to_site(id):
+    url = repo.cart_page(id)
+    return requests.get(url['name'])

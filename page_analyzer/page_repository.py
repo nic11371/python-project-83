@@ -30,7 +30,8 @@ class PageRepository():
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
                 curr.execute(
-                    "SELECT * FROM urls WHERE id = %s;",
+                    """SELECT * FROM urls WHERE id = %s
+                    ORDER BY created_at DESC, name ASC;""",
                     (id,)
                 )
                 return curr.fetchone()
@@ -46,14 +47,15 @@ class PageRepository():
                     return curr.fetchone()[0]
         return None
 
-    def insert_check(self, url_id):
+    def insert_check(self, url_id, status_code):
         with self.get_connection() as conn:
             with conn.cursor() as curr:
                 curr.execute(
                     """
-                INSERT INTO url_checks (url_id) VALUES (%s);
+                INSERT INTO url_checks (url_id, status_code)
+                VALUES (%s, %s);
                     """,
-                    (url_id,)
+                    (url_id, status_code)
                 )
 
     def check_row(self, id):
@@ -61,6 +63,7 @@ class PageRepository():
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
                 curr.execute(
                     """SELECT url_checks.id,
+                        url_checks.status_code,
                         url_checks.created_at
                     FROM url_checks
                     INNER JOIN urls
