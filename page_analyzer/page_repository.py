@@ -51,17 +51,22 @@ class PageRepository():
             with conn.cursor() as curr:
                 curr.execute(
                     """
-                INSERT INTO url_checks (url_id) VALUES (%s) RETURNING url_id;
+                INSERT INTO url_checks (url_id) VALUES (%s);
                     """,
                     (url_id,)
                 )
-                return curr.fetchone()[0]
 
     def check_row(self, id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
                 curr.execute(
-                    "SELECT * FROM urls WHERE id = %s ORDER BY id DESC;",
+                    """SELECT url_checks.id,
+                        url_checks.created_at
+                    FROM url_checks
+                    INNER JOIN urls
+                    ON urls.id = url_checks.url_id
+                    WHERE urls.id = %s
+                    ORDER BY url_checks.id DESC;""",
                     (id,)
                 )
-                return curr.fetchone()
+                return curr.fetchall()

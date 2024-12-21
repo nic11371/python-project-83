@@ -59,16 +59,10 @@ def show_page(id):
     page = repo.cart_page(id)
     messages = get_flashed_messages(with_categories=True)
     checks = repo.check_row(id)
-    if checks:
-        return render_template(
-            'pages/show_page.html',
-            page=page,
-            checks=checks,
-            messages=messages
-            )
     return render_template(
         'pages/show_page.html',
         page=page,
+        checks=checks,
         messages=messages
     )
 
