@@ -47,15 +47,16 @@ class PageRepository():
                     return curr.fetchone()[0]
         return None
 
-    def insert_check(self, url_id, status_code):
+    def insert_check(self, url_id, status_code, title, h1, content):
         with self.get_connection() as conn:
             with conn.cursor() as curr:
                 curr.execute(
                     """
-                INSERT INTO url_checks (url_id, status_code)
-                VALUES (%s, %s);
+                INSERT INTO url_checks (
+                    url_id, status_code, h1, title, description)
+                VALUES (%s, %s, %s, %s, %s);
                     """,
-                    (url_id, status_code)
+                    (url_id, status_code, h1, title, content)
                 )
 
     def check_row(self, id):
@@ -64,6 +65,9 @@ class PageRepository():
                 curr.execute(
                     """SELECT url_checks.id,
                         url_checks.status_code,
+                        url_checks.h1,
+                        url_checks.title,
+                        url_checks.description,
                         url_checks.created_at
                     FROM url_checks
                     INNER JOIN urls

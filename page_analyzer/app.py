@@ -12,6 +12,7 @@ from flask import (
 )
 from dotenv import load_dotenv
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 from page_analyzer.page_repository import PageRepository
 
 
@@ -70,8 +71,9 @@ def show_page(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
+    url = repo.cart_page(id)
     try:
-        req = request_to_site(id)
+        req = requests.get(url['name'])
     except Exception:
         flash("Произошла ошибка при проверке", "alert-danger")
         return redirect(url_for('show_page', id=id), code=302)
@@ -79,7 +81,8 @@ def check_url(id):
         flash("Произошла ошибка при проверке", "alert-danger")
         return redirect(url_for('show_page', id=id), code=302)
     status_code = req.status_code
-    repo.insert_check(id, status_code)
+    seo = find_seo(url)
+    repo.insert_check(id, status_code, seo['title'], seo['h1'], seo['content'])
     flash("Страница успешно проверена", "alert-success")
     return redirect(url_for('show_page', id=id), code=302)
 
@@ -110,6 +113,25 @@ def is_validate(url):
     return errors
 
 
-def request_to_site(id):
-    url = repo.cart_page(id)
-    return requests.get(url['name'])
+def find_seo(url):
+    text = requests.get(url['name']).text
+    soup = BeautifulSoup(text, 'lxml')
+    h1 = None
+    title = None
+    meta = None
+    try:
+        h1 = soup.h1.text
+    except Exception:
+        pass
+    try:
+        title = soup.title.text
+    except Exception:
+        pass
+    meta = soup.select('meta[name="description"]')
+    for attr in meta:
+        content = attr.get('content')
+    return {
+        'title': title,
+        'h1': h1,
+        'content': content
+    }
