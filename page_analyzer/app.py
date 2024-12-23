@@ -19,7 +19,6 @@ from page_analyzer.page_repository import PageRepository
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 app = Flask(__name__)
-# app.secret_key = 'super secret key'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
@@ -73,10 +72,8 @@ def check_url(id):
     url = repo.cart_page(id)
     try:
         req = requests.get(url['name'])
+        req.raise_for_status()
     except Exception:
-        flash("Произошла ошибка при проверке", "alert-danger")
-        return redirect(url_for('show_page', id=id), code=302)
-    if req.status_code != 200:
         flash("Произошла ошибка при проверке", "alert-danger")
         return redirect(url_for('show_page', id=id), code=302)
     status_code = req.status_code
