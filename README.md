@@ -24,7 +24,6 @@ WEB-приложение проверяет страницы сайтов по �
 6. Установить gunicorn.
 7. Для установки приложения из пакетов ввести `make package-install`. Приложение установлено и готово к использованию.
 
-
 ## Запуск приложения
 
 1. Для запуска приложения на локальной машине введите команду make dev.
@@ -33,5 +32,5 @@ WEB-приложение проверяет страницы сайтов по �
 
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/nic11371/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/nic11371/python-project-83/actions)
-
+[![main](https://github.com/nic11371/python-project-83/actions/workflows/main.yml/badge.svg?event=push)](https://github.com/nic11371/python-project-83/actions/workflows/main.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/561f99c96f7cea662dd4/maintainability)](https://codeclimate.com/github/nic11371/python-project-83/maintainability)
