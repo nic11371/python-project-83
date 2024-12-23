@@ -12,7 +12,14 @@ class PageRepository():
     def get_content(self):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
-                curr.execute("SELECT * FROM urls ORDER BY id DESC")
+                curr.execute("""SELECT urls.id,
+                            urls.name,
+                            url_checks.status_code,
+                            url_checks.created_at
+                            FROM urls
+                            INNER JOIN url_checks
+                            ON urls.id = url_checks.url_id
+                            ORDER BY id DESC""")
                 return curr.fetchall()
 
     def insert_row(self, normalized_record):
