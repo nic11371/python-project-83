@@ -12,14 +12,24 @@ class PageRepository():
     def get_content(self):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
-                curr.execute("""SELECT urls.id,
-                            urls.name,
-                            url_checks.status_code,
-                            url_checks.created_at
-                            FROM urls
-                            INNER JOIN url_checks
-                            ON urls.id = url_checks.url_id
-                            ORDER BY id DESC""")
+                curr.execute("""
+                DROP VIEW IF EXISTS filter;
+
+                CREATE VIEW filter AS
+                SELECT url_id, MAX(id) AS max_id FROM url_checks
+                GROUP BY url_id;
+
+                SELECT urls.id,
+                    name,
+                    max_id,
+                    status_code,
+                    url_checks.created_at
+                FROM urls
+                LEFT JOIN filter
+                ON urls.id = filter.url_id
+                LEFT JOIN url_checks
+                ON url_checks.id = filter.max_id
+                ORDER BY url_checks.created_at DESC, name;""")
                 return curr.fetchall()
 
     def insert_row(self, normalized_record):
