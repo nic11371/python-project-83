@@ -18,8 +18,8 @@
                 <tr>
                     <td>{{ row.id }}</td>
                     <td><a href="{{ url_for('show_page', id=row.id) }}">{{ row.name }}</a></td>
-                    <td>{{ row.status_code if row.status_code }}</td>
                     <td>{{ row.created_at if row.created_at }}</td>
+                    <td>{{ row.status_code if row.status_code }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
