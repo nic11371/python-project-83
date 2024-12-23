@@ -42,7 +42,7 @@ def new_record():
     error_validate = is_validate(input_url['url'])
     if error_validate:
         flash(error_validate['name'], "alert-danger")
-        return redirect(url_for('root'), code=302)
+        return redirect(url_for('root_page'), code=302)
     normalized_url = normalize_url(input_url['url'])
     page_id = repo.get_id(normalized_url)
     if page_id:
