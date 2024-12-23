@@ -26,7 +26,7 @@ repo = PageRepository(DATABASE_URL)
 
 
 @app.route('/')
-def root():
+def root_page():
     record = {'url': ''}
     messages = get_flashed_messages(with_categories=True)
     return render_template(
@@ -37,21 +37,21 @@ def root():
 
 
 @app.post('/')
-def add_record():
-    record = request.form.to_dict()
-    validate = is_validate(record['url'])
-    if validate:
-        flash(validate['name'], "alert-danger")
+def new_record():
+    input_url = request.form.to_dict()
+    error_validate = is_validate(input_url['url'])
+    if error_validate:
+        flash(error_validate['name'], "alert-danger")
         return redirect(url_for('root'), code=302)
-    normalized_record = normalize_url(record['url'])
-    page_id = repo.get_id(normalized_record)
+    normalized_url = normalize_url(input_url['url'])
+    page_id = repo.get_id(normalized_url)
     if page_id:
         flash("Страница уже существует", "alert-info")
         return redirect(url_for('show_page', id=page_id), code=302)
     else:
-        record['id'] = repo.insert_row(normalized_record)
+        input_url['id'] = repo.insert_row(normalized_url)
         flash("Страница успешно добавлена", "alert-success")
-        return redirect(url_for('show_page', id=record['id']), code=302)
+        return redirect(url_for('show_page', id=input_url['id']), code=302)
 
 
 @app.route('/urls/<int:id>')
