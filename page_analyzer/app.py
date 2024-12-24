@@ -27,54 +27,54 @@ repo = PageRepository(DATABASE_URL)
 
 
 @app.route('/')
-def root_page():
-    record = {'url': ''}
+def index_page():
     messages = get_flashed_messages(with_categories=True)
     return render_template(
         'pages/index.html',
-        record=record,
         messages=messages
     )
 
 
 @app.post('/urls')
 def new_record():
-    input_url = request.form.to_dict()
-    error = is_validate(input_url['url'])
+    form_data = request.form.to_dict()
+    url = form_data['url']
+    url_id = url['id']
+    error = is_validate(url)
     if error:
         flash(error['name'], "alert-danger")
-        message = get_flashed_messages(with_categories=True)
+        messages = get_flashed_messages(with_categories=True)
         return render_template(
             'pages/index.html',
-            input_url=input_url['url'],
-            messages=message
+            url=url,
+            messages=messages
             ), 422
-    normalized_url = normalize_url(input_url['url'])
-    page_id = repo.get_id(normalized_url)
+    normalize_url = normalized_url(url)
+    page_id = repo.get_id(normalize_url)
     if page_id:
         flash("Страница уже существует", "alert-info")
         return redirect(url_for('show_page', id=page_id), code=302)
     else:
-        input_url['id'] = repo.add_url(normalized_url)
+        url_id = repo.add_url(normalize_url)
         flash("Страница успешно добавлена", "alert-success")
-        return redirect(url_for('show_page', id=input_url['id']), code=302)
+        return redirect(url_for('show_page', id=url_id), code=302)
 
 
 @app.route('/urls/<int:id>')
-def show_page(id):
+def site_page(id):
     page = repo.get_site(id)
     messages = get_flashed_messages(with_categories=True)
     checks = repo.check_url(id)
     return render_template(
         'pages/show_page.html',
         page=page,
-        checks=checks,
+        rows=checks,
         messages=messages
     )
 
 
 @app.post('/urls/<id>/checks')
-def check_url(id):
+def check_page(id):
     url = repo.get_site(id)
     try:
         req = requests.get(url['name'])
@@ -90,17 +90,17 @@ def check_url(id):
 
 
 @app.route('/urls')
-def get_pages():
+def all_pages():
     list_pages = repo.get_content()
     messages = get_flashed_messages(with_categories=True)
     return render_template(
-        'pages/get_pages.html',
+        'pages/all_pages.html',
         messages=messages,
         rows=list_pages
     )
 
 
-def normalize_url(url):
+def normalized_url(url):
     parsed_url = urlparse(url)
     normalized_parsed_url = parsed_url._replace(
         path="", params="", query="", fragment="").geturl()
