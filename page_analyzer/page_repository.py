@@ -1,5 +1,5 @@
-from psycopg2.extras import RealDictCursor
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 
 class PageRepository():

@@ -5,7 +5,10 @@ dev:
 	uv run flask --app page_analyzer:app run
 
 check:
-	uv run flake8 .
+	uv run ruff check .
+
+check-fix:
+	uv run ruff check --fix .
 
 PORT ?= 8000
 start:

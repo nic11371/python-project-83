@@ -1,20 +1,21 @@
 import os
-import validators
+from urllib.parse import urlparse
+
 import requests
+import validators
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from flask import (
-    get_flashed_messages,
-    flash,
     Flask,
+    flash,
+    get_flashed_messages,
     redirect,
     render_template,
     request,
-    url_for
+    url_for,
 )
-from dotenv import load_dotenv
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup
-from page_analyzer.page_repository import PageRepository
 
+from page_analyzer.page_repository import PageRepository
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
