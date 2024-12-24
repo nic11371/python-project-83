@@ -36,13 +36,18 @@ def root_page():
     )
 
 
-@app.post('/')
+@app.post('/urls')
 def new_record():
     input_url = request.form.to_dict()
     error_validate = is_validate(input_url['url'])
     if error_validate:
         flash(error_validate['name'], "alert-danger")
-        return redirect(url_for('root_page'), code=302)
+        message = get_flashed_messages(with_categories=True)
+        return render_template(
+            'pages/index.html',
+            input_url=input_url['url'],
+            messages=message
+            ), 422
     normalized_url = normalize_url(input_url['url'])
     page_id = repo.get_id(normalized_url)
     if page_id:
@@ -86,8 +91,10 @@ def check_url(id):
 @app.route('/urls')
 def get_pages():
     list_pages = repo.get_content()
+    messages = get_flashed_messages(with_categories=True)
     return render_template(
         'pages/get_pages.html',
+        messages=messages,
         rows=list_pages
     )
 

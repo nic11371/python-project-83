@@ -1,13 +1,5 @@
 {% extends 'pages/layout.html' %}
 
-{% block alert %}
-<div class="flashes">
-    {% for category, message in messages %}
-    <div class="alert {{ category }}" role="alert">{{ message }}</div>
-    {% endfor %}
-</div>
-{% endblock %}
-
 {% block main %}
 
 <div class="container-lg mt-3">
