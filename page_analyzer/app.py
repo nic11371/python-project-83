@@ -37,27 +37,25 @@ def index_page():
 
 @app.post('/urls')
 def new_record():
-    form_data = request.form.to_dict()
-    url = form_data['url']
-    url_id = url['id']
-    error = is_validate(url)
+    url = request.form.to_dict()
+    error = is_validate(url['url'])
     if error:
         flash(error['name'], "alert-danger")
         messages = get_flashed_messages(with_categories=True)
         return render_template(
             'pages/index.html',
-            url=url,
+            url=url['url'],
             messages=messages
             ), 422
-    normalize_url = normalized_url(url)
+    normalize_url = normalized_url(url['url'])
     page_id = repo.get_id(normalize_url)
     if page_id:
         flash("Страница уже существует", "alert-info")
-        return redirect(url_for('show_page', id=page_id), code=302)
+        return redirect(url_for('site_page', id=page_id), code=302)
     else:
-        url_id = repo.add_url(normalize_url)
+        url['id'] = repo.add_url(normalize_url)
         flash("Страница успешно добавлена", "alert-success")
-        return redirect(url_for('show_page', id=url_id), code=302)
+        return redirect(url_for('site_page', id=url['id']), code=302)
 
 
 @app.route('/urls/<int:id>')
@@ -66,7 +64,7 @@ def site_page(id):
     messages = get_flashed_messages(with_categories=True)
     checks = repo.check_url(id)
     return render_template(
-        'pages/show_page.html',
+        'pages/site_page.html',
         page=page,
         rows=checks,
         messages=messages
@@ -81,12 +79,12 @@ def check_page(id):
         req.raise_for_status()
     except Exception:
         flash("Произошла ошибка при проверке", "alert-danger")
-        return redirect(url_for('show_page', id=id), code=302)
+        return redirect(url_for('site_page', id=id), code=302)
     status_code = req.status_code
     seo = find_seo(url)
     repo.add_check(id, status_code, seo['title'], seo['h1'], seo['content'])
     flash("Страница успешно проверена", "alert-success")
-    return redirect(url_for('show_page', id=id), code=302)
+    return redirect(url_for('site_page', id=id), code=302)
 
 
 @app.route('/urls')
