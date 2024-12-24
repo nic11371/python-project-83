@@ -16,6 +16,3 @@ start:
 
 build:
 	./build.sh
-
-uv-install:
-	curl -LsSf https://astral.sh/uv/install.sh | sh
