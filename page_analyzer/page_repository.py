@@ -32,18 +32,18 @@ class PageRepository():
                 ORDER BY url_checks.created_at DESC, name;""")
                 return curr.fetchall()
 
-    def insert_row(self, normalized_record):
+    def add_url(self, url):
         with self.get_connection() as conn:
             with conn.cursor() as curr:
                 curr.execute(
                     """
                     INSERT INTO urls (name) VALUES (%s) RETURNING id;
                     """,
-                    (normalized_record,)
+                    (url,)
                 )
                 return curr.fetchone()[0]
 
-    def cart_page(self, id):
+    def get_site(self, id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
                 curr.execute(
@@ -64,7 +64,7 @@ class PageRepository():
                     return curr.fetchone()[0]
         return None
 
-    def insert_check(self, url_id, status_code, title, h1, content):
+    def add_check(self, url_id, status_code, title, h1, content):
         with self.get_connection() as conn:
             with conn.cursor() as curr:
                 curr.execute(
@@ -76,7 +76,7 @@ class PageRepository():
                     (url_id, status_code, h1, title, content)
                 )
 
-    def check_row(self, id):
+    def check_url(self, id):
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as curr:
                 curr.execute(

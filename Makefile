@@ -19,9 +19,3 @@ build:
 
 uv-install:
 	curl -LsSf https://astral.sh/uv/install.sh | sh
-
-uv-env:
-	source $HOME/.local/bin/env (sh, bash, zsh)
-
-uv-env-path:
-	source $HOME/.local/bin/env.fish (fish)

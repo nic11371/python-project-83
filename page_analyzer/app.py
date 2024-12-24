@@ -40,9 +40,9 @@ def root_page():
 @app.post('/urls')
 def new_record():
     input_url = request.form.to_dict()
-    error_validate = is_validate(input_url['url'])
-    if error_validate:
-        flash(error_validate['name'], "alert-danger")
+    error = is_validate(input_url['url'])
+    if error:
+        flash(error['name'], "alert-danger")
         message = get_flashed_messages(with_categories=True)
         return render_template(
             'pages/index.html',
@@ -55,16 +55,16 @@ def new_record():
         flash("Страница уже существует", "alert-info")
         return redirect(url_for('show_page', id=page_id), code=302)
     else:
-        input_url['id'] = repo.insert_row(normalized_url)
+        input_url['id'] = repo.add_url(normalized_url)
         flash("Страница успешно добавлена", "alert-success")
         return redirect(url_for('show_page', id=input_url['id']), code=302)
 
 
 @app.route('/urls/<int:id>')
 def show_page(id):
-    page = repo.cart_page(id)
+    page = repo.get_site(id)
     messages = get_flashed_messages(with_categories=True)
-    checks = repo.check_row(id)
+    checks = repo.check_url(id)
     return render_template(
         'pages/show_page.html',
         page=page,
@@ -75,7 +75,7 @@ def show_page(id):
 
 @app.post('/urls/<id>/checks')
 def check_url(id):
-    url = repo.cart_page(id)
+    url = repo.get_site(id)
     try:
         req = requests.get(url['name'])
         req.raise_for_status()
@@ -84,7 +84,7 @@ def check_url(id):
         return redirect(url_for('show_page', id=id), code=302)
     status_code = req.status_code
     seo = find_seo(url)
-    repo.insert_check(id, status_code, seo['title'], seo['h1'], seo['content'])
+    repo.add_check(id, status_code, seo['title'], seo['h1'], seo['content'])
     flash("Страница успешно проверена", "alert-success")
     return redirect(url_for('show_page', id=id), code=302)
 
