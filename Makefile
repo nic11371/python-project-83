@@ -17,5 +17,9 @@ start:
 build:
 	./build.sh
 
-install-uv:
-	pipx install uv
+poetry-install:
+	poetry install
+
+PORT ?= 8000
+poetry-start:
+	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
