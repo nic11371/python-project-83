@@ -18,7 +18,7 @@ build:
 	./build.sh
 
 poetry-install:
-	poetry install
+	poetry init
 
 PORT ?= 8000
 poetry-start:
