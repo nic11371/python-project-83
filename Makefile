@@ -22,4 +22,4 @@ poetry-install:
 
 PORT ?= 8000
 poetry-start:
-	pip run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
+	uvicorn page_analyzer:app --host 0.0.0.0 --port $PORT
