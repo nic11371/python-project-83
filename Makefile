@@ -16,10 +16,3 @@ start:
 
 build:
 	./build.sh
-
-poetry-install:
-	poetry init
-
-PORT ?= 8000
-poetry-start:
-	gunicorn page_analyzer:app
