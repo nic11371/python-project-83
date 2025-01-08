@@ -32,7 +32,7 @@ class PageRepository():
             ON url_checks.id = filter.max_id
             ORDER BY url_checks.created_at DESC, name;""")
         result = curr.fetchall()
-        self.pool.putconn(conn)
+        self.pool.putconn(conn, close=True)
         return result
 
     def add_url(self, url):
@@ -46,7 +46,7 @@ class PageRepository():
         )
         result = curr.fetchone()[0]
         conn.commit()
-        self.pool.putconn(conn)
+        self.pool.putconn(conn, close=True)
         return result
 
     def get_site(self, id):
@@ -59,7 +59,7 @@ class PageRepository():
             (id,)
         )
         result = curr.fetchone()
-        self.pool.putconn(conn)
+        self.pool.putconn(conn, close=True)
         return result
 
     def get_id(self, data):
@@ -71,8 +71,9 @@ class PageRepository():
         )
         if curr.rowcount > 0:
             result = curr.fetchone()[0]
-            self.pool.putconn(conn)
+            self.pool.putconn(conn, close=True)
             return result
+        self.pool.putconn(conn, close=True)
         return None
 
     def add_check(self, url_id, status_code, title, h1, content):
@@ -87,7 +88,7 @@ class PageRepository():
                 (url_id, status_code, h1, title, content)
             )
         conn.commit()
-        self.pool.putconn(conn)
+        self.pool.putconn(conn, close=True)
 
     def check_url(self, id):
         conn = self.get_connection()
@@ -107,5 +108,5 @@ class PageRepository():
             (id,)
         )
         result = curr.fetchall()
-        self.pool.putconn(conn)
+        self.pool.putconn(conn, close=True)
         return result
