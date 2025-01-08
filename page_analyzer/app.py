@@ -1,9 +1,5 @@
 import os
-from urllib.parse import urlparse
-
 import requests
-import validators
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -16,6 +12,7 @@ from flask import (
 )
 
 from page_analyzer.page_repository import PageRepository
+from page_analyzer.utilities import Utilities
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -24,6 +21,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
 repo = PageRepository(DATABASE_URL)
+utility = Utilities()
 
 
 @app.route('/')
@@ -38,7 +36,7 @@ def index_page():
 @app.post('/urls')
 def new_record():
     url = request.form.to_dict()
-    error = is_validate(url['url'])
+    error = utility.is_validate(url['url'])
     if error:
         flash(error['name'], "alert-danger")
         messages = get_flashed_messages(with_categories=True)
@@ -47,7 +45,7 @@ def new_record():
             url=url['url'],
             messages=messages
             ), 422
-    normalize_url = normalized_url(url['url'])
+    normalize_url = utility.normalized_url(url['url'])
     page_id = repo.get_id(normalize_url)
     if page_id:
         flash("Страница уже существует", "alert-info")
@@ -81,7 +79,7 @@ def check_page(id):
         flash("Произошла ошибка при проверке", "alert-danger")
         return redirect(url_for('site_page', id=id), code=302)
     status_code = req.status_code
-    seo = find_seo(url)
+    seo = utility.find_seo(url)
     repo.add_check(id, status_code, seo['title'], seo['h1'], seo['content'])
     flash("Страница успешно проверена", "alert-success")
     return redirect(url_for('site_page', id=id), code=302)
@@ -96,44 +94,3 @@ def all_pages():
         messages=messages,
         rows=list_pages
     )
-
-
-def normalized_url(url):
-    parsed_url = urlparse(url)
-    normalized_parsed_url = parsed_url._replace(
-        path="", params="", query="", fragment="").geturl()
-    return normalized_parsed_url.lower()
-
-
-def is_validate(url):
-    errors = {}
-    is_valid = validators.url(url)
-    if not is_valid:
-        errors['name'] = "Некорректный URL"
-    if len(url) > 255:
-        errors['name'] = "Слишком длинный адрес"
-    return errors
-
-
-def find_seo(url):
-    text = requests.get(url['name']).text
-    soup = BeautifulSoup(text, 'lxml')
-    h1 = None
-    title = None
-    meta = None
-    try:
-        h1 = soup.h1.text
-    except Exception:
-        pass
-    try:
-        title = soup.title.text
-    except Exception:
-        pass
-    meta = soup.select('meta[name="description"]')
-    for attr in meta:
-        content = attr.get('content')
-    return {
-        'title': title,
-        'h1': h1,
-        'content': content
-    }
