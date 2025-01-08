@@ -20,7 +20,7 @@ jobs:
         # make depends on poetry
       - name: Install dependencies
         run: |
-          make install
+          curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run linter and pytest
         run: |
           make check
