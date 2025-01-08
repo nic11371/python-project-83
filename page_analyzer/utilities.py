@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
-import validators
+
 import requests
+import validators
 from bs4 import BeautifulSoup
 
 
